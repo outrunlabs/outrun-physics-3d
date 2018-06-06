@@ -20,14 +20,11 @@ export class PhysicsWorld {
     });
   }
   public addMesh(mesh: Mesh): void {
-    console.log("addMesh");
     const positions = mesh.vertexData["position"];
 
     const physicsMesh = new this._ammo.btTriangleMesh();
 
-    console.dir(this._ammo.btVector3);
     for (let i = 0; i < positions.length; i += 9) {
-      console.log(i);
       const v1 = new this._ammo.btVector3(
         positions[i + 0],
         positions[i + 1],
@@ -41,7 +38,7 @@ export class PhysicsWorld {
       const v3 = new this._ammo.btVector3(
         positions[i + 6],
         positions[i + 7],
-        positions[i + 7]
+        positions[i + 8]
       );
 
       physicsMesh.addTriangle(v1, v2, v3, true);
