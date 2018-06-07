@@ -2,6 +2,9 @@ import { Mesh, Vector3 } from "outrun-renderer-3d";
 
 const AmmoFunction = require("./deps/ammo");
 
+import { IPhysicsBody, PhysicsBodyInfo } from "./PhysicsBody";
+import { AmmoPhysicsBody, createAmmoPhysicsBody } from "./AmmoPhysicsBody";
+
 export interface RayHitResult {
   hit: boolean;
   normal: Vector3;
@@ -15,13 +18,36 @@ export interface IMeshHandle {
 export class PhysicsWorld {
   private _ammo: any;
   private _ammoPhysicsWorld: any;
+  private _boundCreateAmmoPhysicsBody: any;
+  private _bodys: IPhysicsBody[] = [];
 
   constructor() {
+    window["Module"] = { TOTAL_MEMORY: 256 * 1024 * 1024 };
     AmmoFunction().then(ammo => {
       this._ammo = ammo;
       this._initWorld();
+      this._boundCreateAmmoPhysicsBody = createAmmoPhysicsBody(
+        this._ammo,
+        this._ammoPhysicsWorld
+      );
       console.log("init complete");
     });
+  }
+
+  public get bodies(): IPhysicsBody[] {
+    return this._bodys;
+  }
+
+  public addBody(
+    physicsBodyInfo: PhysicsBodyInfo,
+    initialPosition: Vector3 = Vector3.zero()
+  ): IPhysicsBody {
+    const ret = this._boundCreateAmmoPhysicsBody(
+      physicsBodyInfo,
+      initialPosition
+    );
+    this._bodys.push(ret);
+    return ret;
   }
 
   public addMesh(mesh: Mesh): IMeshHandle {
@@ -95,6 +121,10 @@ export class PhysicsWorld {
       normal: Vector3.create(an.x(), an.y(), an.z()),
       point: Vector3.create(ap.x(), ap.y(), ap.z())
     };
+  }
+
+  public stepSimulation(timeStep: number, maxSubSteps: number): void {
+    this._ammoPhysicsWorld.stepSimulation(timeStep, maxSubSteps);
   }
 
   private _initWorld(): void {
