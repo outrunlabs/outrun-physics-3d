@@ -8,6 +8,10 @@ export interface RayHitResult {
   point: Vector3;
 }
 
+export interface IMeshHandle {
+  dispose(): void;
+}
+
 export class PhysicsWorld {
   private _ammo: any;
   private _ammoPhysicsWorld: any;
@@ -19,7 +23,8 @@ export class PhysicsWorld {
       console.log("init complete");
     });
   }
-  public addMesh(mesh: Mesh): void {
+
+  public addMesh(mesh: Mesh): IMeshHandle {
     const positions = mesh.vertexData["position"];
 
     const physicsMesh = new this._ammo.btTriangleMesh();
@@ -65,6 +70,10 @@ export class PhysicsWorld {
     const body = new this._ammo.btRigidBody(bci);
 
     this._ammoPhysicsWorld.addRigidBody(body);
+
+    return {
+      dispose: () => this._ammoPhysicsWorld.removeRigidBody(body)
+    };
   }
 
   public rayCast(
